@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Early Warning System — PANEN-AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════ */
+:root {
+  --bg:        #f4f6f3;
+  --surface:   #ffffff;
+  --surface-2: #f8faf7;
+  --border:    #e3e8e1;
+  --border-2:  #d0d9ce;
+
+  --nav-bg:    #0d2818;
+
+  --green-900: #0d2818;
+  --green-800: #14532d;
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-400: #4ade80;
+  --green-300: #86efac;
+  --green-100: #dcfce7;
+  --green-50:  #f0fdf4;
+
+  --ink:       #111c13;
+  --ink-2:     #344a2f;
+  --muted:     #6b7f66;
+  --faint:     #a8b9a3;
+
+  --red:       #dc2626;
+  --amber:     #d97706;
+  --blue:      #2563eb;
+  --orange:    #ea580c;
+
+  --radius:    14px;
+  --radius-sm: 9px;
+
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08);
+  --sidebar-w: 220px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+}
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius:10px; }
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--nav-bg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+
+.sidebar-section {
+  padding: 22px 16px 0;
+}
+.sidebar-section-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--green-600);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+/* Filter pills */
+.filter-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--green-300);
+  margin-bottom: 10px;
+  padding: 0 4px;
+  display: block;
+}
+
+.form-group select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fff;
+  padding: 9px 32px 9px 12px;
+  font-family: var(--font);
+  font-size: 12.5px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2386efac' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .2s;
+}
+.form-group select:focus { outline: none; border-color: var(--green-500); }
+.form-group select option { background: var(--green-900); }
+
+/* ═══════════════════════════════════════
+   MAIN
+═══════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px 28px;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.page-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.4px;
+}
+.page-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Status banner */
+#statusBanner {
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: none;
+}
+
+/* ── 4 KARTU COUNT ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.count-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: box-shadow .2s;
+}
+.count-card:hover { box-shadow: var(--shadow); }
+
+.count-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.count-icon.kritis  { background: #fee2e2; }
+.count-icon.siaga   { background: #ffedd5; }
+.count-icon.waspada { background: #fef9c3; }
+.count-icon.aman    { background: #dcfce7; }
+
+.count-info { min-width: 0; }
+.count-num {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+.count-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.count-sub {
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+/* ── TABEL EWS ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title i { color: var(--green-600); font-size: 13px; }
+.panel-count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.table-wrap {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ews-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ews-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.ews-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.ews-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.ews-table tbody tr:last-child td { border-bottom: none; }
+.ews-table tbody tr:hover { background: var(--surface-2); }
+
+/* Kolom provinsi */
+.prov-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.prov-rank {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-right: 8px;
+}
+
+/* Badge status */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.badge-kritis  { background: #fee2e2; color: #991b1b; }
+.badge-kritis .dot  { background: #dc2626; }
+.badge-siaga   { background: #ffedd5; color: #9a3412; }
+.badge-siaga .dot   { background: #ea580c; }
+.badge-waspada { background: #fef9c3; color: #854d0e; }
+.badge-waspada .dot { background: #ca8a04; }
+.badge-aman    { background: #dcfce7; color: #166534; }
+.badge-aman .dot    { background: #16a34a; }
+
+/* Indikator */
+.indikator-text {
+  font-size: 12px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.indikator-text i {
+  color: var(--muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Deadline */
+.deadline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.deadline-h7  { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+.deadline-h14 { background: #ffedd5; border-color: #fdba74; color: #9a3412; }
+.deadline-h21 { background: #fef9c3; border-color: #fde047; color: #854d0e; }
+
+/* Loading */
+.loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--faint);
+  font-size: 13px;
+  gap: 10px;
+}
+.loading-placeholder i { font-size: 24px; }
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--faint);
+  font-size: 13px;
+  gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Filter Status</div>
+    <span class="filter-label">Tampilkan</span>
+    <div class="form-group">
+      <select id="filterSelect" onchange="setFilterDropdown(this.value)">
+        <option value="semua">Semua Provinsi</option>
+        <option value="Kritis">Kritis</option>
+        <option value="Siaga">Siaga</option>
+        <option value="Waspada">Waspada</option>
+        <option value="Aman">Aman</option>
+      </select>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════
+     MAIN
+═══════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Early Warning System Pangan</h2>
+      <p>Proyeksi kerentanan pangan per provinsi · H-7, H-14, H-21</p>
+    </div>
+  </div>
+
+  <!-- Status banner -->
+  <div id="statusBanner"></div>
+
+  <!-- ── 4 KARTU COUNT ── -->
+  <div class="cards-grid">
+    <div class="count-card">
+      <div class="count-icon kritis">🔴</div>
+      <div class="count-info">
+        <div class="count-num" id="numKritis">—</div>
+        <div class="count-label">Kritis</div>
+        <div class="count-sub">DVI ≥ 0.7</div>
+      </div>
+    </div>
+    <div class="count-card">
+      <div class="count-icon siaga">🟠</div>
+      <div class="count-info">
+        <div class="count-num" id="numSiaga">—</div>
+        <div class="count-label">Siaga</div>
+        <div class="count-sub">0.5 ≤ DVI < 0.7</div>
+      </div>
+    </div>
+    <div class="count-card">
+      <div class="count-icon waspada">🟡</div>
+      <div class="count-info">
+        <div class="count-num" id="numWaspada">—</div>
+        <div class="count-label">Waspada</div>
+        <div class="count-sub">0.3 ≤ DVI < 0.5</div>
+      </div>
+    </div>
+    <div class="count-card">
+      <div class="count-icon aman">🟢</div>
+      <div class="count-info">
+        <div class="count-num" id="numAman">—</div>
+        <div class="count-label">Aman</div>
+        <div class="count-sub">DVI < 0.3</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TABEL ALERT ── -->
+  <div class="panel">
+    <div class="panel-hd">
+      <div class="panel-title">
+        <i class="fa fa-triangle-exclamation"></i>
+        Alert Summary
+      </div>
+      <span class="panel-count" id="tabelCount">Memuat...</span>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <div class="loading-placeholder">
+        <i class="fa fa-circle-notch fa-spin" style="color:var(--green-600);"></i>
+        <span>Memuat...</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = '';
+
+let allData   = [];
+let activeFilter = 'semua';
+
+const STATUS_ORDER = ['Kritis', 'Siaga', 'Waspada', 'Aman'];
+
+function badgeClass(level) {
+  const map = { 'Kritis': 'kritis', 'Siaga': 'siaga', 'Waspada': 'waspada', 'Aman': 'aman' };
+  return map[level] || 'aman';
+}
+
+function deadlineClass(dl) {
+  if (dl === 'H-7')  return 'deadline-h7';
+  if (dl === 'H-14') return 'deadline-h14';
+  return 'deadline-h21';
+}
+
+function indikatorIcon(indikator) {
+  if (!indikator) return 'fa fa-circle-info';
+  // Handle array atau string
+  const s = (Array.isArray(indikator) ? indikator[0] : indikator).toLowerCase();
+  if (s.includes('harga') || s.includes('cabai') || s.includes('ayam') || s.includes('sapi') || s.includes('telur'))
+    return 'fa fa-tag';
+  if (s.includes('curah') || s.includes('hujan'))
+    return 'fa fa-cloud-rain';
+  if (s.includes('ncpr') || s.includes('stok') || s.includes('supply'))
+    return 'fa fa-box';
+  return 'fa fa-circle-info';
+}
+
+function showBanner(msg, type='info') {
+  const b = document.getElementById('statusBanner');
+  const styles = {
+    info:    'background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;',
+    error:   'background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;',
+    success: 'background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;',
+  };
+  b.style.cssText = (styles[type]||styles.info) + 'display:block;border-radius:9px;padding:10px 16px;font-size:12.5px;font-weight:500;';
+  b.innerHTML = msg;
+  if (type === 'success') setTimeout(() => { b.style.display='none'; }, 3000);
+}
+
+function updateCounts(data) {
+  const counts = { Kritis: 0, Siaga: 0, Waspada: 0, Aman: 0 };
+  data.forEach(d => { if (counts[d.level] !== undefined) counts[d.level]++; });
+
+  document.getElementById('numKritis').textContent  = counts.Kritis;
+  document.getElementById('numSiaga').textContent   = counts.Siaga;
+  document.getElementById('numWaspada').textContent = counts.Waspada;
+  document.getElementById('numAman').textContent    = counts.Aman;
+
+
+}
+
+function renderTable(data) {
+  const filtered = activeFilter === 'semua'
+    ? data
+    : data.filter(d => d.level === activeFilter);
+
+  const filterLabel = activeFilter === 'semua' ? '' : ' · ' + activeFilter;
+  document.getElementById('tabelCount').textContent = `${filtered.length} provinsi${filterLabel}`;
+
+  if (filtered.length === 0) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state">
+        <i class="fa fa-circle-check" style="font-size:28px;color:var(--green-500);"></i>
+        <span>Tidak ada provinsi dengan status <strong>${activeFilter}</strong></span>
+      </div>`;
+    return;
+  }
+
+  const rows = filtered.map((d, i) => {
+    const bc  = badgeClass(d.level);
+    const dc  = deadlineClass(d.deadline);
+    const ic  = indikatorIcon(d.indikator);
+    return `
+      <tr>
+        <td>
+          <span class="prov-rank">${String(i+1).padStart(2,'0')}</span>
+          <span class="prov-name">${d.provinsi}</span>
+        </td>
+        <td>
+          <span class="status-badge badge-${bc}">
+            <span class="dot"></span>
+            ${d.level}
+          </span>
+        </td>
+        <td>
+          ${Array.isArray(d.indikator)
+            ? d.indikator.map((ind, idx) => `
+              <div class="indikator-text" style="${idx > 0 ? 'margin-top:4px;opacity:' + (idx === 1 ? '0.75' : '0.5') : ''}">
+                <i class="${indikatorIcon(ind)}"></i>
+                ${ind}
+              </div>`).join('')
+            : `<div class="indikator-text"><i class="${ic}"></i>${d.indikator || '—'}</div>`
+          }
+        </td>
+        <td>
+          <span class="deadline-badge ${dc}">
+            <i class="fa fa-clock" style="font-size:10px;"></i>
+            ${d.deadline}
+          </span>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('tableWrap').innerHTML = `
+    <table class="ews-table">
+      <thead>
+        <tr>
+          <th>Provinsi</th>
+          <th>Level</th>
+          <th>Indikator</th>
+          <th>Deadline Intervensi</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function setFilterDropdown(status) {
+  activeFilter = status;
+  renderTable(allData);
+}
+
+async function loadEWS() {
+  try {
+    const res = await fetch(`${API}/api/ews-horizon`);
+    if (!res.ok) throw new Error('Gagal mengambil data EWS');
+    const json = await res.json();
+    if (json.status !== 'success') throw new Error(json.message);
+
+    // Konversi object ke array, sort by level
+    allData = Object.entries(json.data).map(([prov, val]) => ({
+      provinsi:  prov,
+      level:     val.level,
+      indikator: val.indikator,
+      deadline:  val.deadline,
+      dvi_h7:    val.h7?.dvi,
+      dvi_h14:   val.h14?.dvi,
+      dvi_h21:   val.h21?.dvi,
+    })).sort((a, b) =>
+      STATUS_ORDER.indexOf(a.level) - STATUS_ORDER.indexOf(b.level)
+    );
+
+    updateCounts(allData);
+    renderTable(allData);
+    showBanner(`✅ Data EWS berhasil dimuat · ${allData.length} provinsi`, 'success');
+
+  } catch(e) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="loading-placeholder">
+        <i class="fa fa-circle-exclamation" style="color:var(--red);"></i>
+        <span>Gagal memuat data: ${e.message}</span>
+      </div>`;
+    showBanner(`Gagal memuat EWS: ${e.message}`, 'error');
+  }
+}
+
+// Auto-load saat halaman dibuka
+loadEWS();
+</script>
+</body>
+</html>

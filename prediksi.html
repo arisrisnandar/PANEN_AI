@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediksi Harga Pangan — PANEN-AI</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════
+   TOKENS — sama dengan utama.html
+═══════════════════════════════════════ */
+:root {
+  --bg:        #f4f6f3;
+  --surface:   #ffffff;
+  --surface-2: #f8faf7;
+  --border:    #e3e8e1;
+  --border-2:  #d0d9ce;
+
+  --nav-bg:    #0d2818;
+
+  --green-900: #0d2818;
+  --green-800: #14532d;
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-400: #4ade80;
+  --green-300: #86efac;
+  --green-100: #dcfce7;
+  --green-50:  #f0fdf4;
+
+  --ink:       #111c13;
+  --ink-2:     #344a2f;
+  --muted:     #6b7f66;
+  --faint:     #a8b9a3;
+
+  --red:       #dc2626;
+  --amber:     #d97706;
+  --blue:      #2563eb;
+  --orange:    #ea580c;
+
+  --radius:    14px;
+  --radius-sm: 9px;
+
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08);
+  --sidebar-w: 260px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+}
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius:10px; }
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--nav-bg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  width: 34px; height: 34px;
+  background: var(--green-600);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.logo-text .logo-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.logo-text .logo-sub {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--green-400);
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.sidebar-section {
+  padding: 18px 16px 0;
+}
+.sidebar-section-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--green-600);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+/* Form controls */
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--green-300);
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+.form-group select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fff;
+  padding: 9px 32px 9px 12px;
+  font-family: var(--font);
+  font-size: 12.5px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2386efac' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .2s;
+}
+.form-group select:focus { outline: none; border-color: var(--green-500); }
+.form-group select option { background: var(--green-900); }
+
+/* Horizon slider */
+.horizon-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.horizon-val {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green-400);
+}
+input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.12);
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--green-500);
+  border: 2px solid var(--green-900);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
+}
+.range-hints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 4px;
+  padding: 0 2px;
+}
+
+/* Top N pills */
+.topn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.topn-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.topn-pill:hover { border-color: var(--green-400); color: var(--green-400); }
+.topn-pill.active { background: var(--green-600); border-color: var(--green-600); color: #fff; }
+
+/* Btn predict */
+.btn-predict {
+  margin: 16px 16px 0;
+  width: calc(100% - 32px);
+  background: var(--green-600);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .2s, transform .15s;
+}
+.btn-predict:hover { background: var(--green-500); transform: translateY(-1px); }
+.btn-predict:active { transform: translateY(0); }
+.btn-predict:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.18);
+  text-align: center;
+  font-family: var(--mono);
+}
+
+/* ═══════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px 28px;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.page-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.4px;
+}
+.page-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-700);
+}
+
+/* Panel */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title i { color: var(--green-600); font-size: 13px; }
+.panel-sub { font-size: 11px; color: var(--faint); }
+
+/* Status banner */
+#statusBanner {
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: none;
+}
+
+/* ── GRAFIK PREDIKSI ── */
+.chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+/* ── GRID BAWAH: HEATMAP + TOP N ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+/* HEATMAP */
+.heatmap-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.heatmap-filter label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.heatmap-filter select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 28px 6px 10px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7f66' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.heatmap-filter select:focus { outline: none; border-color: var(--green-500); }
+
+.heatmap-table-wrap { overflow-x: auto; overflow-y: auto; max-height: 320px; }
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.heatmap-table th {
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.heatmap-table th:first-child { text-align: left; }
+.heatmap-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.heatmap-table td:first-child {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.heatmap-table tbody tr:last-child td { border-bottom: none; }
+.heatmap-table tbody tr:hover { background: var(--surface-2); }
+
+.heat-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.heat-tinggi  { background: #fee2e2; color: #991b1b; }
+.heat-sedang  { background: #ffedd5; color: #9a3412; }
+.heat-waspada { background: #fef9c3; color: #854d0e; }
+.heat-stabil  { background: #dcfce7; color: #166534; }
+
+/* Legenda heatmap */
+.heatmap-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* TOP N */
+.topn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.topn-pills-sm {
+  display: flex;
+  gap: 4px;
+}
+.topn-pill-sm {
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.topn-pill-sm:hover { border-color: var(--green-400); color: var(--green-700); }
+.topn-pill-sm.active { background: var(--green-600); border-color: var(--green-600); color: #fff; }
+
+.topn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.topn-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: all .15s;
+}
+.topn-item:hover { border-color: var(--border-2); box-shadow: var(--shadow-sm); }
+.topn-rank {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faint);
+  width: 18px;
+  flex-shrink: 0;
+}
+.topn-name {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topn-pct {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.topn-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.badge-tinggi  { background: #fee2e2; color: #991b1b; }
+.badge-sedang  { background: #ffedd5; color: #9a3412; }
+.badge-waspada { background: #fef9c3; color: #854d0e; }
+.badge-stabil  { background: #dcfce7; color: #166534; }
+
+/* Loading spinner */
+.loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--faint);
+  font-size: 13px;
+  gap: 10px;
+}
+.loading-placeholder i { font-size: 22px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<aside class="sidebar">
+
+
+  <!-- Filter Grafik Prediksi -->
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Grafik Prediksi</div>
+
+    <div class="form-group">
+      <label>Provinsi</label>
+      <select id="selProvinsi">
+        <option value="">Memuat...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Komoditas</label>
+      <select id="selKomoditas">
+        <option value="">Memuat...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <div class="horizon-row">
+        <label style="margin:0;">Horizon Prediksi</label>
+        <span class="horizon-val" id="horizonVal">30 hari</span>
+      </div>
+      <input type="range" id="horizonSlider" min="7" max="90" step="1" value="30">
+      <div class="range-hints"><span>7h</span><span>30h</span><span>60h</span><span>90h</span></div>
+    </div>
+
+    <button class="btn-predict" id="btnPredict" onclick="loadGrafik()">
+      <i class="fa fa-chart-line" id="btnPredictIcon"></i>
+      Tampilkan Prediksi
+    </button>
+  </div>
+
+  <!-- Filter Heatmap + Top N -->
+  <div class="sidebar-section" style="margin-top:20px;">
+    <div class="sidebar-section-title">Heatmap & Top N</div>
+
+    <div class="form-group">
+      <label>Komoditas</label>
+      <select id="selKomoditasHeatmap">
+        <option value="">Memuat...</option>
+      </select>
+    </div>
+
+    <button class="btn-predict" id="btnHeatmap" onclick="loadHeatmap()">
+      <i class="fa fa-table-cells" id="btnHeatmapIcon"></i>
+      Tampilkan Heatmap
+    </button>
+  </div>
+
+
+</aside>
+
+<!-- ═══════════════════════════════════════
+     MAIN
+═══════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2>Prediksi Harga Pangan</h2>
+      <p>Proyeksi harga mulai Januari 2026</p>
+    </div>
+  
+  </div>
+
+  <!-- Status banner -->
+  <div id="statusBanner"></div>
+
+  <!-- ── GRAFIK PREDIKSI ── -->
+  <div class="panel">
+    <div class="panel-hd">
+      <div class="panel-title">
+        <i class="fa fa-chart-line"></i>
+        Grafik Prediksi Harga
+      </div>
+
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chartPrediksi"></canvas>
+      <div class="loading-placeholder" id="grafikPlaceholder">
+        <i class="fa fa-chart-line" style="color:var(--faint);"></i>
+        <span>Pilih provinsi & komoditas untuk melihat prediksi harga</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BAWAH: HEATMAP + TOP N ── -->
+  <div class="grid-2">
+
+    <!-- HEATMAP -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">
+          <i class="fa fa-table-cells"></i>
+          Heatmap Risiko Kenaikan Harga
+        </div>
+  
+      </div>
+
+      <div id="heatmapContent">
+        <div class="loading-placeholder">
+          <i class="fa fa-table-cells" style="color:var(--faint);"></i>
+          <span>Pilih komoditas & klik Tampilkan Heatmap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP N -->
+    <div class="panel">
+      <div class="topn-header">
+        <div class="panel-title">
+          <i class="fa fa-ranking-star"></i>
+          Daerah Risiko Tertinggi
+        </div>
+        <div class="topn-pills-sm" id="topnPillsSm">
+          <button class="topn-pill-sm" onclick="setTopNSm(5, this)">5</button>
+          <button class="topn-pill-sm active" onclick="setTopNSm(10, this)">10</button>
+          <button class="topn-pill-sm" onclick="setTopNSm(15, this)">15</button>
+          <button class="topn-pill-sm" onclick="setTopNSm(999, this)">Semua</button>
+        </div>
+      </div>
+
+      <div id="topnContent">
+        <div class="loading-placeholder">
+          <i class="fa fa-ranking-star" style="color:var(--faint);"></i>
+          <span>Muncul setelah heatmap dimuat</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid-2 -->
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════ */
+const API = '';
+
+const RISK_LABEL = {
+  'Krisis':   'tinggi',
+  'Siaga':    'sedang',
+  'Waspada':  'waspada',
+  'Aman':     'stabil',
+};
+const RISK_DISPLAY = {
+  'tinggi':  'Krisis',
+  'sedang':  'Siaga',
+  'waspada': 'Waspada',
+  'stabil':  'Aman',
+};
+const RISK_COLOR = {
+  tinggi:  '#ef4444',
+  sedang:  '#f97316',
+  waspada: '#eab308',
+  stabil:  '#22c55e',
+};
+
+let chartInstance = null;
+let allHeatmapData = null;
+let topNValue = 10;
+let topNSmValue = 10;
+
+/* ═══════════════════════════════════════
+   INIT: LOAD MODEL INFO
+═══════════════════════════════════════ */
+async function init() {
+  try {
+    const res  = await fetch(`${API}/api/model-info`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error('Backend tidak merespons');
+    const info = await res.json();
+
+    const provList  = info.provinsi_list  || [];
+    const komList   = info.komoditas_list || [];
+
+    // Populate sidebar selects
+    const selProv = document.getElementById('selProvinsi');
+    selProv.innerHTML = provList.map(p => `<option value="${p}">${p}</option>`).join('');
+
+    const selKomo = document.getElementById('selKomoditas');
+    selKomo.innerHTML = komList.map(k => `<option value="${k}">${k}</option>`).join('');
+
+    const selKomoHeatmap = document.getElementById('selKomoditasHeatmap');
+    selKomoHeatmap.innerHTML = komList.map(k => `<option value="${k}">${k}</option>`).join('');
+
+
+
+  } catch(e) {
+    showBanner(`Backend tidak terhubung: ${e.message}. Pastikan backend.py sudah berjalan.`, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+function showBanner(msg, type='info') {
+  const b = document.getElementById('statusBanner');
+  const styles = {
+    info:    'background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;',
+    error:   'background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;',
+    success: 'background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;',
+    warn:    'background:#fffbeb;border:1px solid #fde68a;color:#92400e;',
+  };
+  b.style.cssText = (styles[type]||styles.info) + 'display:block;border-radius:9px;padding:10px 16px;font-size:12.5px;font-weight:500;';
+  b.innerHTML = msg;
+  if (type === 'success') setTimeout(() => { b.style.display='none'; }, 4000);
+}
+
+function riskClass(label) {
+  return RISK_LABEL[label] || 'stabil';
+}
+
+/* ═══════════════════════════════════════
+   HORIZON SLIDER
+═══════════════════════════════════════ */
+document.getElementById('horizonSlider').addEventListener('input', function() {
+  document.getElementById('horizonVal').textContent = `${this.value} hari`;
+});
+
+/* ═══════════════════════════════════════
+   TOP N SIDEBAR
+═══════════════════════════════════════ */
+function setTopN(n, el) {
+  topNValue = n;
+  document.querySelectorAll('.topn-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ═══════════════════════════════════════
+   TOP N PANEL (kecil, sinkron dengan heatmap)
+═══════════════════════════════════════ */
+function setTopNSm(n, el) {
+  topNSmValue = n;
+  document.querySelectorAll('.topn-pill-sm').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  if (allHeatmapData) renderTopN(allHeatmapData);
+}
+
+/* ═══════════════════════════════════════
+   GRAFIK PREDIKSI
+═══════════════════════════════════════ */
+async function loadGrafik() {
+  const provinsi  = document.getElementById('selProvinsi').value;
+  const komoditas = document.getElementById('selKomoditas').value;
+  const horizon   = parseInt(document.getElementById('horizonSlider').value);
+
+  if (!provinsi || !komoditas) {
+    showBanner('Pilih provinsi dan komoditas terlebih dahulu.', 'warn');
+    return;
+  }
+
+  const btn  = document.getElementById('btnPredict');
+  const icon = document.getElementById('btnPredictIcon');
+  btn.disabled = true;
+  icon.className = 'fa fa-circle-notch fa-spin';
+
+  const placeholder = document.getElementById('grafikPlaceholder');
+  placeholder.style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/predict-week`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provinsi, komoditas, horizon })
+    });
+    if (!res.ok) throw new Error('Gagal mengambil data prediksi');
+    const data = await res.json();
+
+    if (data.status !== 'success') throw new Error(data.message || 'Error dari backend');
+
+    const preds  = data.predictions;
+    const labels = preds.map(p => `H+${p.day}`);
+    const prices = preds.map(p => p.price);
+
+    renderGrafik(labels, prices, provinsi, komoditas);
+
+    const avg = prices.reduce((a,b)=>a+b,0)/prices.length;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+
+    showBanner(`✅ Prediksi berhasil dimuat: ${horizon} hari ke depan untuk ${komoditas} di ${provinsi}`, 'success');
+
+  } catch(e) {
+    placeholder.style.display = 'flex';
+    showBanner(`Gagal memuat prediksi: ${e.message}`, 'error');
+  }
+
+  btn.disabled = false;
+  icon.className = 'fa fa-chart-line';
+}
+
+function renderGrafik(labels, prices, provinsi, komoditas) {
+  const canvas = document.getElementById('chartPrediksi');
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  // Warna gradient
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, 'rgba(34,197,94,0.25)');
+  gradient.addColorStop(1, 'rgba(34,197,94,0.01)');
+
+  chartInstance = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: `${komoditas} — ${provinsi}`,
+        data: prices,
+        borderColor: '#16a34a',
+        backgroundColor: gradient,
+        borderWidth: 2,
+        pointRadius: labels.length <= 30 ? 3 : 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#16a34a',
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `Rp ${ctx.parsed.y.toLocaleString('id-ID', {maximumFractionDigits:0})}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            font: { family: "'JetBrains Mono', monospace", size: 10 },
+            color: '#a8b9a3',
+            maxTicksLimit: 10,
+          },
+          grid: { color: '#e3e8e1' }
+        },
+        y: {
+          ticks: {
+            font: { family: "'JetBrains Mono', monospace", size: 10 },
+            color: '#a8b9a3',
+            callback: v => `Rp ${v.toLocaleString('id-ID',{maximumFractionDigits:0})}`
+          },
+          grid: { color: '#e3e8e1' }
+        }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════
+   HEATMAP + TOP N
+═══════════════════════════════════════ */
+async function loadHeatmap() {
+  const komoditas = document.getElementById('selKomoditasHeatmap').value;
+  if (!komoditas) {
+    showBanner('Pilih komoditas untuk heatmap.', 'warn');
+    return;
+  }
+
+  const btn  = document.getElementById('btnHeatmap');
+  const icon = document.getElementById('btnHeatmapIcon');
+  btn.disabled = true;
+  icon.className = 'fa fa-circle-notch fa-spin';
+
+  document.getElementById('heatmapContent').innerHTML = `
+    <div class="loading-placeholder">
+      <i class="fa fa-circle-notch fa-spin" style="color:var(--green-600);"></i>
+      <span>Memuat...</span>
+    </div>`;
+  document.getElementById('topnContent').innerHTML = `
+    <div class="loading-placeholder">
+      <i class="fa fa-circle-notch fa-spin" style="color:var(--green-600);"></i>
+      <span>Memuat...</span>
+    </div>`;
+
+  try {
+    const res = await fetch(`${API}/api/predict-all-provinsi?komoditas=${encodeURIComponent(komoditas)}&horizon=28`);
+    if (!res.ok) throw new Error('Gagal mengambil data');
+    const data = await res.json();
+    if (data.status !== 'success') throw new Error(data.message);
+
+    allHeatmapData = data.data;
+    renderHeatmap(allHeatmapData, komoditas);
+    renderTopN(allHeatmapData);
+
+
+
+    showBanner(`✅ Heatmap berhasil dimuat untuk ${komoditas}`, 'success');
+
+  } catch(e) {
+    document.getElementById('heatmapContent').innerHTML = `
+      <div class="loading-placeholder">
+        <i class="fa fa-circle-exclamation" style="color:var(--red);"></i>
+        <span>Gagal: ${e.message}</span>
+      </div>`;
+    showBanner(`Gagal memuat heatmap: ${e.message}`, 'error');
+  }
+
+  btn.disabled = false;
+  icon.className = 'fa fa-table-cells';
+}
+
+function renderHeatmap(data, komoditas) {
+  const provs = Object.keys(data);
+
+  let rows = provs.map(prov => {
+    const d = data[prov];
+    const minggu = d.minggu || {};
+    return { prov, minggu };
+  });
+
+  const html = `
+    <div class="heatmap-table-wrap">
+      <table class="heatmap-table">
+        <thead>
+          <tr>
+            <th>Provinsi</th>
+            <th>Minggu 1</th>
+            <th>Minggu 2</th>
+            <th>Minggu 3</th>
+            <th>Minggu 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(({prov, minggu}) => `
+            <tr>
+              <td title="${prov}">${prov.replace('Kepulauan ','Kep. ')}</td>
+              ${[1,2,3,4].map(m => {
+                const mg = minggu[`minggu_${m}`];
+                if (!mg) return `<td><span class="heat-cell heat-stabil">—</span></td>`;
+                const cls = 'heat-' + riskClass(mg.risk_level);
+                const sign = mg.pct_change > 0 ? '+' : '';
+                return `<td><span class="heat-cell ${cls}">${sign}${mg.pct_change.toFixed(1)}%</span></td>`;
+              }).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="heatmap-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1px solid #fca5a5;"></div> Krisis (>15%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ffedd5;border:1px solid #fdba74;"></div> Siaga (10–15%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:1px solid #fde047;"></div> Waspada (5–10%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></div> Aman (<5%)</div>
+    </div>`;
+
+  document.getElementById('heatmapContent').innerHTML = html;
+}
+
+function renderTopN(data) {
+  const provs = Object.keys(data);
+  const n     = topNSmValue;
+
+  const items = provs
+    .map(prov => ({ prov, pct: data[prov].pct_change, risk: data[prov].risk_level }))
+    .sort((a,b) => b.pct - a.pct)
+    .slice(0, n === 999 ? provs.length : n);
+
+  const html = `
+    <div class="topn-list">
+      ${items.map((item, i) => {
+        const cls  = riskClass(item.risk);
+        const sign = item.pct > 0 ? '+' : '';
+        const col  = RISK_COLOR[cls] || '#22c55e';
+        return `
+          <div class="topn-item">
+            <span class="topn-rank">${String(i+1).padStart(2,'0')}</span>
+            <span class="topn-name" title="${item.prov}">${item.prov}</span>
+            <span class="topn-pct" style="color:${col};">${sign}${item.pct.toFixed(1)}%</span>
+            <span class="topn-badge badge-${cls}">${RISK_DISPLAY[cls] || item.risk}</span>
+          </div>`;
+      }).join('')}
+    </div>`;
+
+  document.getElementById('topnContent').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   START
+═══════════════════════════════════════ */
+async function initAndLoad() {
+  await init();
+  // Auto-load default setelah dropdown terisi
+  const firstProv  = document.getElementById('selProvinsi').value;
+  const firstKom   = document.getElementById('selKomoditas').value;
+  const firstKomHm = document.getElementById('selKomoditasHeatmap').value;
+  if (firstProv && firstKom) loadGrafik();
+  if (firstKomHm) loadHeatmap();
+}
+initAndLoad();
+</script>
+</body>
+</html>

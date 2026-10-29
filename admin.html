@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — PANEN-AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:        #f4f6f3;
+  --surface:   #ffffff;
+  --surface-2: #f8faf7;
+  --border:    #e3e8e1;
+  --border-2:  #d0d9ce;
+  --nav-bg:    #0d2818;
+  --green-900: #0d2818;
+  --green-800: #14532d;
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-400: #4ade80;
+  --green-100: #dcfce7;
+  --green-50:  #f0fdf4;
+  --ink:       #111c13;
+  --ink-2:     #344a2f;
+  --muted:     #6b7f66;
+  --faint:     #a8b9a3;
+  --red:       #dc2626;
+  --red-light: #fef2f2;
+  --amber:     #d97706;
+  --radius:    14px;
+  --radius-sm: 9px;
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08);
+  --nav-h:     54px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius:10px; }
+
+/* ── NAV ── */
+.nav {
+  height: var(--nav-h);
+  background: var(--nav-bg);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo .logo-mark {
+  width: 32px; height: 32px;
+  background: var(--green-600);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.nav-logo .logo-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+}
+.nav-logo .logo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green-400);
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-logout:hover {
+  background: rgba(220,38,38,0.15);
+  border-color: rgba(220,38,38,0.3);
+  color: #fca5a5;
+}
+.nav-user {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  font-family: var(--mono);
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 46px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 8px;
+}
+.topbar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.topbar-sep { color: var(--faint); font-size: 11px; }
+.topbar-sub { font-size: 13px; color: var(--green-700); font-weight: 600; }
+
+/* ── MAIN ── */
+.main {
+  padding: 28px;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.section-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.section-icon.green { background: var(--green-100); color: var(--green-700); }
+.section-icon.blue  { background: #dbeafe; color: #1d4ed8; }
+.section-icon.amber { background: #fef3c7; color: #92400e; }
+.section-title { font-size: 15px; font-weight: 800; color: var(--ink); }
+.section-desc  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+/* ── UPLOAD CARD ── */
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  border: 2px dashed var(--border-2);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--surface-2);
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--green-500);
+  background: var(--green-50);
+}
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.dz-icon {
+  font-size: 28px;
+  color: var(--faint);
+  margin-bottom: 10px;
+}
+.dz-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+.dz-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.dz-filename {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-700);
+  font-family: var(--mono);
+}
+.dz-filename.show { display: flex; }
+
+/* ── PREVIEW TABLE ── */
+.preview-wrap {
+  display: none;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.preview-wrap.show { display: block; }
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.preview-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.preview-count {
+  font-size: 11px;
+  color: var(--faint);
+  font-family: var(--mono);
+}
+.preview-scroll {
+  overflow-x: auto;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.preview-table th {
+  padding: 8px 12px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 700;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+.preview-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.preview-table tr:last-child td { border-bottom: none; }
+.preview-table tr:hover td { background: var(--surface-2); }
+
+/* ── ACTIONS ── */
+.upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+}
+.btn-primary {
+  background: var(--green-900);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--green-700); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+
+/* ── ALERT ── */
+.alert {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+.alert.show { display: flex; }
+.alert-success {
+  background: var(--green-100);
+  color: var(--green-800);
+  border: 1px solid #bbf7d0;
+}
+.alert-error {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1px solid #fecaca;
+}
+.alert-info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+/* ── STATUS CARDS ── */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.status-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+.status-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--mono);
+  margin-bottom: 4px;
+}
+.status-sub {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ── LOG ── */
+
+/* ── FILE LIST TABLE ── */
+.file-list-wrap {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
+}
+.file-list-wrap.show { display: block; }
+.file-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.file-list-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.file-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.file-list-table th {
+  padding: 8px 14px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 700;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.file-list-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+}
+.file-list-table tr:last-child td { border-bottom: none; }
+.file-list-table tr:hover td { background: var(--surface-2); }
+.file-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.file-size {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.file-date {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.btn-hapus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: var(--red);
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-hapus:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+.empty-files {
+  padding: 16px 14px;
+  text-align: center;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+/* ── MODAL KONFIRMASI ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-icon {
+  width: 44px; height: 44px;
+  background: #fef2f2;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.modal-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.modal-filename {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--ink);
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.btn-cancel {
+  flex: 1;
+  height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-cancel:hover { background: var(--border); }
+.btn-confirm-delete {
+  flex: 1;
+  height: 40px;
+  background: var(--red);
+  border: none;
+  border-radius: 9px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-confirm-delete:hover { background: #b91c1c; }
+
+.log-wrap {
+  background: var(--green-900);
+  border-radius: 10px;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--green-300);
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.7;
+}
+.log-entry { margin-bottom: 2px; }
+.log-entry .log-time { color: var(--faint); margin-right: 8px; }
+.log-entry .log-ok   { color: var(--green-400); }
+.log-entry .log-err  { color: #f87171; }
+.log-entry .log-info { color: #93c5fd; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="/">
+    <div class="logo-mark">🌾</div>
+    <span class="logo-name">PANEN-AI</span>
+    <span class="logo-badge">ADMIN</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser">admin</span>
+    <button class="btn-logout" onclick="logout()">
+      <i class="fa fa-right-from-bracket"></i> Keluar
+    </button>
+  </div>
+</nav>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-title">PANEN-AI</span>
+  <span class="topbar-sep">›</span>
+  <span class="topbar-sub">Dashboard Admin</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── STATUS ── -->
+  <div>
+    <div class="section-header">
+      <div class="section-icon green"><i class="fa fa-chart-bar"></i></div>
+      <div>
+        <div class="section-title">Status Sistem</div>
+        <div class="section-desc">Informasi data terakhir yang tersedia di sistem</div>
+      </div>
+    </div>
+    <div class="status-grid">
+      <div class="status-card">
+        <div class="status-label">Data Harga Terakhir</div>
+        <div class="status-value" id="statHarga">—</div>
+        <div class="status-sub" id="statHargaSub">Memuat...</div>
+      </div>
+      <div class="status-card">
+        <div class="status-label">Data FSVA Terakhir</div>
+        <div class="status-value" id="statFsva">—</div>
+        <div class="status-sub" id="statFsvaSub">Memuat...</div>
+      </div>
+      <div class="status-card">
+        <div class="status-label">Model</div>
+        <div class="status-value" id="statModel">—</div>
+        <div class="status-sub" id="statModelSub">Memuat...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UPLOAD HARGA ── -->
+  <div class="upload-card">
+    <div class="section-header">
+      <div class="section-icon green"><i class="fa fa-money-bill-trend-up"></i></div>
+      <div>
+        <div class="section-title">Upload Data Harga Harian</div>
+        <div class="section-desc">Upload per komoditas · Kolom wajib: tanggal, komoditas, provinsi, harga</div>
+      </div>
+    </div>
+
+    <!-- 4 Komoditas -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+      <!-- Cabai Rawit Merah -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;">
+          🌶 Cabai Rawit Merah
+        </div>
+        <div class="drop-zone" id="dzHargaCabai" style="padding:14px;">
+          <input type="file" accept=".csv" onchange="handleFile('harga-cabai', this)">
+          <div class="dz-icon" style="font-size:20px;"><i class="fa fa-file-csv"></i></div>
+          <div class="dz-text" style="font-size:12px;">Klik atau drag & drop</div>
+          <div class="dz-filename" id="fnHargaCabai"><i class="fa fa-check-circle"></i> <span></span></div>
+        </div>
+        <div class="alert" id="alertHargaCabai"></div>
+        <div class="upload-actions" style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" id="btnHargaCabai" onclick="uploadFile('harga-cabai')" disabled>
+            <i class="fa fa-cloud-arrow-up"></i> Upload
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="resetUpload('harga-cabai')">
+            <i class="fa fa-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Daging Ayam Ras -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;">
+          🍗 Daging Ayam Ras
+        </div>
+        <div class="drop-zone" id="dzHargaAyam" style="padding:14px;">
+          <input type="file" accept=".csv" onchange="handleFile('harga-ayam', this)">
+          <div class="dz-icon" style="font-size:20px;"><i class="fa fa-file-csv"></i></div>
+          <div class="dz-text" style="font-size:12px;">Klik atau drag & drop</div>
+          <div class="dz-filename" id="fnHargaAyam"><i class="fa fa-check-circle"></i> <span></span></div>
+        </div>
+        <div class="alert" id="alertHargaAyam"></div>
+        <div class="upload-actions" style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" id="btnHargaAyam" onclick="uploadFile('harga-ayam')" disabled>
+            <i class="fa fa-cloud-arrow-up"></i> Upload
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="resetUpload('harga-ayam')">
+            <i class="fa fa-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Daging Sapi Murni -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;">
+          🥩 Daging Sapi Murni
+        </div>
+        <div class="drop-zone" id="dzHargaSapi" style="padding:14px;">
+          <input type="file" accept=".csv" onchange="handleFile('harga-sapi', this)">
+          <div class="dz-icon" style="font-size:20px;"><i class="fa fa-file-csv"></i></div>
+          <div class="dz-text" style="font-size:12px;">Klik atau drag & drop</div>
+          <div class="dz-filename" id="fnHargaSapi"><i class="fa fa-check-circle"></i> <span></span></div>
+        </div>
+        <div class="alert" id="alertHargaSapi"></div>
+        <div class="upload-actions" style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" id="btnHargaSapi" onclick="uploadFile('harga-sapi')" disabled>
+            <i class="fa fa-cloud-arrow-up"></i> Upload
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="resetUpload('harga-sapi')">
+            <i class="fa fa-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Telur Ayam Ras -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;">
+          🥚 Telur Ayam Ras
+        </div>
+        <div class="drop-zone" id="dzHargaTelur" style="padding:14px;">
+          <input type="file" accept=".csv" onchange="handleFile('harga-telur', this)">
+          <div class="dz-icon" style="font-size:20px;"><i class="fa fa-file-csv"></i></div>
+          <div class="dz-text" style="font-size:12px;">Klik atau drag & drop</div>
+          <div class="dz-filename" id="fnHargaTelur"><i class="fa fa-check-circle"></i> <span></span></div>
+        </div>
+        <div class="alert" id="alertHargaTelur"></div>
+        <div class="upload-actions" style="margin-top:10px;">
+          <button class="btn btn-primary btn-sm" id="btnHargaTelur" onclick="uploadFile('harga-telur')" disabled>
+            <i class="fa fa-cloud-arrow-up"></i> Upload
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="resetUpload('harga-telur')">
+            <i class="fa fa-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /grid komoditas -->
+
+    <!-- File Upload Tersimpan per Komoditas -->
+    <div style="margin-top:20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;">
+        File Upload Tersimpan
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <!-- Cabai -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🌶 Cabai Rawit Merah</div>
+          <div id="uploadListCabai"><div style="font-size:11px;color:var(--faint);">Memuat...</div></div>
+        </div>
+
+        <!-- Ayam -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🍗 Daging Ayam Ras</div>
+          <div id="uploadListAyam"><div style="font-size:11px;color:var(--faint);">Memuat...</div></div>
+        </div>
+
+        <!-- Sapi -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🥩 Daging Sapi Murni</div>
+          <div id="uploadListSapi"><div style="font-size:11px;color:var(--faint);">Memuat...</div></div>
+        </div>
+
+        <!-- Telur -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🥚 Telur Ayam Ras</div>
+          <div id="uploadListTelur"><div style="font-size:11px;color:var(--faint);">Memuat...</div></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── UPLOAD FSVA ── -->
+  <div class="upload-card">
+    <div class="section-header">
+      <div class="section-icon blue"><i class="fa fa-map-location-dot"></i></div>
+      <div>
+        <div class="section-title">Upload Data FSVA Kabupaten</div>
+        <div class="section-desc">Format CSV sama persis dengan fsva kabupaten YYYY.csv</div>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="dzFsva">
+      <input type="file" accept=".csv" onchange="handleFile('fsva', this)">
+      <div class="dz-icon"><i class="fa fa-file-csv"></i></div>
+      <div class="dz-text">Klik atau drag & drop file CSV</div>
+      <div class="dz-sub">Hanya file .csv · Data FSVA kabupaten per tahun</div>
+      <div class="dz-filename" id="fnFsva"><i class="fa fa-check-circle"></i> <span></span></div>
+    </div>
+
+    <div class="preview-wrap" id="previewFsva">
+      <div class="preview-header">
+        <span class="preview-title">Preview Data</span>
+        <span class="preview-count" id="countFsva"></span>
+      </div>
+      <div class="preview-scroll">
+        <table class="preview-table" id="tableFsva"></table>
+      </div>
+    </div>
+
+    <div class="alert" id="alertFsva"></div>
+
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="btnFsva" onclick="uploadFile('fsva')" disabled>
+        <i class="fa fa-cloud-arrow-up"></i> Simpan ke Sistem
+      </button>
+      <button class="btn btn-secondary" onclick="resetUpload('fsva')">
+        <i class="fa fa-rotate-left"></i> Reset
+      </button>
+    </div>
+
+    <!-- File list FSVA -->
+    <div class="file-list-wrap" id="fileListFsva">
+      <div class="file-list-header">
+        <span class="file-list-title">File Tersimpan</span>
+        <span style="font-size:11px;color:var(--faint);" id="fileCountFsva"></span>
+      </div>
+      <table class="file-list-table">
+        <thead><tr><th>Nama File</th><th>Ukuran</th><th>Terakhir Diubah</th><th></th></tr></thead>
+        <tbody id="fileBodyFsva"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── UPLOAD CURAH HUJAN ── -->
+  <div class="upload-card">
+    <div class="section-header">
+      <div class="section-icon amber"><i class="fa fa-cloud-rain"></i></div>
+      <div>
+        <div class="section-title">Upload Data Curah Hujan</div>
+        <div class="section-desc">Format CSV sama persis dengan data curah hujan yang sudah ada</div>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="dzHujan">
+      <input type="file" accept=".csv" onchange="handleFile('hujan', this)">
+      <div class="dz-icon"><i class="fa fa-file-csv"></i></div>
+      <div class="dz-text">Klik atau drag & drop file CSV</div>
+      <div class="dz-sub">Hanya file .csv · Data curah hujan per provinsi</div>
+      <div class="dz-filename" id="fnHujan"><i class="fa fa-check-circle"></i> <span></span></div>
+    </div>
+
+    <div class="preview-wrap" id="previewHujan">
+      <div class="preview-header">
+        <span class="preview-title">Preview Data</span>
+        <span class="preview-count" id="countHujan"></span>
+      </div>
+      <div class="preview-scroll">
+        <table class="preview-table" id="tableHujan"></table>
+      </div>
+    </div>
+
+    <div class="alert" id="alertHujan"></div>
+
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="btnHujan" onclick="uploadFile('hujan')" disabled>
+        <i class="fa fa-cloud-arrow-up"></i> Simpan ke Sistem
+      </button>
+      <button class="btn btn-secondary" onclick="resetUpload('hujan')">
+        <i class="fa fa-rotate-left"></i> Reset
+      </button>
+    </div>
+
+    <!-- File Upload Tersimpan Curah Hujan -->
+    <div style="margin-top:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
+        File Upload Tersimpan
+      </div>
+      <div id="uploadListHujan"><div style="font-size:11px;color:var(--faint);">Memuat...</div></div>
+    </div>
+  </div>
+
+  <!-- ── LOG AKTIVITAS ── -->
+  <div class="upload-card">
+    <div class="section-header">
+      <div class="section-icon green"><i class="fa fa-terminal"></i></div>
+      <div>
+        <div class="section-title">Log Aktivitas</div>
+        <div class="section-desc">Riwayat upload data oleh admin</div>
+      </div>
+    </div>
+    <div class="log-wrap" id="logWrap">
+      <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-info">Sistem siap</span></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const API = '';
+const files = { harga: null, fsva: null, hujan: null };
+
+// ── Cek session ──
+async function checkSession() {
+  try {
+    const res  = await fetch(`${API}/admin/check`);
+    const data = await res.json();
+    if (data.status !== 'ok') {
+      window.location.href = '/admin/login';
+    } else {
+      document.getElementById('navUser').textContent = data.username || 'admin';
+    }
+  } catch {
+    window.location.href = '/admin/login';
+  }
+}
+
+// ── Load status sistem ──
+async function loadStatus() {
+  try {
+    const res  = await fetch(`${API}/admin/status`);
+    const data = await res.json();
+    if (data.status === 'success') {
+      document.getElementById('statHarga').textContent    = data.last_harga_date  || '—';
+      document.getElementById('statHargaSub').textContent = `${data.total_harga_rows || 0} baris data`;
+      document.getElementById('statFsva').textContent     = data.last_fsva_year   || '—';
+      document.getElementById('statFsvaSub').textContent  = `${data.total_fsva_kab || 0} kabupaten`;
+      document.getElementById('statModel').textContent    = `${data.model_mape || '—'}%`;
+      document.getElementById('statModelSub').textContent = `MAPE · R² ${data.model_r2 || '—'}`;
+    }
+  } catch(e) {
+    addLog('Gagal load status sistem', 'err');
+  }
+}
+
+// ── Handle file input ──
+function handleFile(type, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.csv')) {
+    showAlert(type, 'File harus berformat .csv', 'error');
+    return;
+  }
+
+  files[type] = file;
+
+  // Tampilkan nama file
+  const fn = document.getElementById(`fn${cap(type)}`);
+  fn.querySelector('span').textContent = file.name;
+  fn.classList.add('show');
+  const dzEl = document.querySelector(`#dz${cap(type)} .dz-icon`);
+  if (dzEl) dzEl.style.display = 'none';
+  const dzTxt = document.querySelector(`#dz${cap(type)} .dz-text`);
+  if (dzTxt) dzTxt.style.display = 'none';
+  const dzSub = document.querySelector(`#dz${cap(type)} .dz-sub`);
+  if (dzSub) dzSub.style.display = 'none';
+
+  // Parse CSV untuk preview (skip preview untuk komoditas individual)
+  if (!type.startsWith('harga-')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      renderPreview(type, text, file.name);
+    };
+    reader.readAsText(file);
+  }
+  // Enable upload button
+  const btn = document.getElementById(`btn${cap(type)}`);
+  if (btn) btn.disabled = false;
+}
+
+function cap(s) {
+  // Handle kebab-case: 'harga-cabai' → 'HargaCabai'
+  return s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+}
+
+// ── Render preview tabel ──
+function renderPreview(type, csvText, filename) {
+  const lines = csvText.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) {
+    showAlert(type, 'File CSV kosong atau tidak valid', 'error');
+    return;
+  }
+
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  const rows    = lines.slice(1, 11); // max 10 baris preview
+  const total   = lines.length - 1;
+
+  // Build table
+  const table = document.getElementById(`table${cap(type)}`);
+  table.innerHTML = '';
+
+  // Header
+  const thead = document.createElement('thead');
+  const trh   = document.createElement('tr');
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  // Body
+  const tbody = document.createElement('tbody');
+  rows.forEach(row => {
+    const cols = row.split(',').map(c => c.trim().replace(/"/g, ''));
+    const tr   = document.createElement('tr');
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      td.textContent = c;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  document.getElementById(`count${cap(type)}`).textContent =
+    `${Math.min(10, total)} dari ${total} baris`;
+  document.getElementById(`preview${cap(type)}`).classList.add('show');
+  document.getElementById(`btn${cap(type)}`).disabled = false;
+
+  showAlert(type, `File "${filename}" siap diupload — ${total} baris data terdeteksi`, 'info');
+  addLog(`Preview: ${filename} (${total} baris)`, 'info');
+}
+
+// ── Upload ke backend ──
+async function uploadFile(type) {
+  const file = files[type];
+  if (!file) return;
+
+  const btn = document.getElementById(`btn${cap(type)}`);
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-circle-notch fa-spin"></i> Mengupload...';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const endpoints = {
+    'harga-cabai':  '/admin/upload/harga/cabai',
+    'harga-ayam':   '/admin/upload/harga/ayam',
+    'harga-sapi':   '/admin/upload/harga/sapi',
+    'harga-telur':  '/admin/upload/harga/telur',
+    fsva:           '/admin/upload/fsva',
+    hujan:          '/admin/upload/curah-hujan',
+  };
+
+  try {
+    const res  = await fetch(`${API}${endpoints[type]}`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      showAlert(type, `✓ Berhasil disimpan! ${data.message || ''}`, 'success');
+      addLog(`Upload ${type}: ${file.name} → ${data.message || 'OK'}`, 'ok');
+      loadStatus();
+      // refresh file list sesuai tipe
+      if (type.startsWith('harga-') || type === 'hujan') {
+        loadUploadLists();
+      } else {
+        loadFileList(type);
+      }
+    } else {
+      showAlert(type, `Gagal: ${data.message || 'Terjadi kesalahan'}`, 'error');
+      addLog(`Gagal upload ${type}: ${data.message}`, 'err');
+    }
+  } catch(e) {
+    showAlert(type, 'Gagal terhubung ke server', 'error');
+    addLog(`Error upload ${type}: ${e.message}`, 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa fa-cloud-arrow-up"></i> Simpan ke Sistem';
+}
+
+// ── Reset upload ──
+function resetUpload(type) {
+  files[type] = null;
+  const fn = document.getElementById(`fn${cap(type)}`);
+  fn.classList.remove('show');
+  document.querySelector(`#dz${cap(type)} .dz-icon`).style.display  = '';
+  document.querySelector(`#dz${cap(type)} .dz-text`).style.display  = '';
+  document.querySelector(`#dz${cap(type)} .dz-sub`).style.display   = '';
+  document.getElementById(`preview${cap(type)}`).classList.remove('show');
+  document.getElementById(`alert${cap(type)}`).className = 'alert';
+  document.getElementById(`btn${cap(type)}`).disabled = true;
+  // Reset file input
+  const input = document.querySelector(`#dz${cap(type)} input[type=file]`);
+  if (input) input.value = '';
+}
+
+// ── Show alert ──
+function showAlert(type, msg, kind) {
+  const el = document.getElementById(`alert${cap(type)}`);
+  el.className = `alert alert-${kind} show`;
+  el.innerHTML = `<i class="fa fa-${kind === 'success' ? 'check-circle' : kind === 'error' ? 'circle-exclamation' : 'circle-info'}"></i> ${msg}`;
+}
+
+// ── Log ──
+function addLog(msg, level = 'info') {
+  const wrap = document.getElementById('logWrap');
+  const now  = new Date().toLocaleTimeString('id-ID');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-time">${now}</span><span class="log-${level}">${msg}</span>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+// ── Drag & Drop ──
+const DROPZONE_MAP = {
+  HargaCabai: 'harga-cabai',
+  HargaAyam:  'harga-ayam',
+  HargaSapi:  'harga-sapi',
+  HargaTelur: 'harga-telur',
+  Fsva:       'fsva',
+  Hujan:      'hujan',
+};
+Object.entries(DROPZONE_MAP).forEach(([t, jenis]) => {
+  const dz = document.getElementById(`dz${t}`);
+  if (!dz) { console.warn(`Drop-zone dz${t} tidak ditemukan di HTML`); return; }
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const input = dz.querySelector('input[type=file]');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleFile(jenis, input);
+    }
+  });
+});
+
+// ── Logout ──
+async function logout() {
+  await fetch(`${API}/admin/logout`, { method: 'POST' });
+  window.location.href = '/admin/login';
+}
+
+
+// ── Load file list ──
+async function loadFileList(jenis) {
+  try {
+    const res  = await fetch(`${API}/admin/files/${jenis}`);
+    const data = await res.json();
+    if (data.status !== 'success') return;
+
+    const files   = data.files || [];
+    const capJ    = cap(jenis === 'hujan' ? 'Hujan' : jenis);
+    const wrap    = document.getElementById(`fileList${capJ}`);
+    const tbody   = document.getElementById(`fileBody${capJ}`);
+    const counter = document.getElementById(`fileCount${capJ}`);
+
+    if (files.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="empty-files">Belum ada file tersimpan</td></tr>`;
+    } else {
+      tbody.innerHTML = files.map(f => `
+        <tr>
+          <td><span class="file-name">${f.name}</span></td>
+          <td><span class="file-size">${f.size_kb} KB</span></td>
+          <td><span class="file-date">${f.modified}</span></td>
+          <td>
+            <button class="btn-hapus" onclick="showModal('${jenis}','${f.name}')">
+              <i class="fa fa-trash"></i> Hapus
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      counter.textContent = `${files.length} file`;
+    }
+    wrap.classList.add('show');
+  } catch(e) {
+    addLog(`Gagal load file list ${jenis}: ${e.message}`, 'err');
+  }
+}
+
+function loadAllFileLists() {
+  // cabai/ayam/sapi/telur/hujan sudah ditangani loadUploadLists() di bawah
+  // (endpoint & elemen HTML-nya benar). loadFileList('hujan') dihapus karena
+  // elemen fileListHujan/fileBodyHujan gak pernah ada di HTML (selalu error).
+  loadFileList('fsva');
+}
+
+// (loadUploadList lama dihapus — sekarang ditangani loadUploadLists() di bawah,
+//  yang sudah cocok dengan endpoint backend /admin/uploads/<jenis>)
+
+// ── Modal konfirmasi hapus ──
+let _deleteJenis = null;
+let _deleteFile  = null;
+
+function showModal(jenis, filename) {
+  _deleteJenis = jenis;
+  _deleteFile  = filename;
+  document.getElementById('modalFilename').textContent = filename;
+  document.getElementById('modalHapus').classList.add('show');
+}
+
+function closeModal() {
+  _deleteJenis = null;
+  _deleteFile  = null;
+  document.getElementById('modalHapus').classList.remove('show');
+}
+
+async function confirmDelete() {
+  if (!_deleteJenis || !_deleteFile) return;
+  const jenis    = _deleteJenis;
+  const filename = _deleteFile;
+  closeModal();
+
+  try {
+    const res  = await fetch(`${API}/admin/files/${jenis}/${encodeURIComponent(filename)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      addLog(`Hapus ${jenis}: ${filename} → OK`, 'ok');
+      loadFileList(jenis);
+      loadStatus();
+    } else {
+      addLog(`Gagal hapus ${filename}: ${data.message}`, 'err');
+    }
+  } catch(e) {
+    addLog(`Error hapus: ${e.message}`, 'err');
+  }
+}
+
+// Tutup modal kalau klik overlay + jalankan init SETELAH semua elemen HTML
+// (termasuk div#modalHapus yang letaknya di bawah script ini) selesai dimuat.
+// Sebelumnya ini dieksekusi langsung, tapi modalHapus belum ada di DOM saat
+// itu -> error -> checkSession()/loadStatus()/loadAllFileLists() di bawahnya
+// gak pernah kejalanin -> makanya halaman stuck "memuat..." selamanya.
+document.addEventListener('DOMContentLoaded', function() {
+  const modalEl = document.getElementById('modalHapus');
+  if (modalEl) {
+    modalEl.addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  }
+
+  // ── Init ──
+  checkSession();
+  loadStatus();
+  loadAllFileLists();
+  loadUploadLists();
+});
+
+// ── Upload list per komoditas ──
+const UPLOAD_LIST_MAP = {
+  cabai: 'uploadListCabai',
+  ayam:  'uploadListAyam',
+  sapi:  'uploadListSapi',
+  telur: 'uploadListTelur',
+  hujan: 'uploadListHujan',
+};
+
+async function loadUploadLists() {
+  for (const [jenis, elId] of Object.entries(UPLOAD_LIST_MAP)) {
+    const el = document.getElementById(elId);
+    if (!el) continue;
+    try {
+      const res  = await fetch(`/admin/uploads/${jenis}`);
+      const data = await res.json();
+      if (data.status !== 'success' || !data.data.length) {
+        el.innerHTML = '<div style="font-size:11px;color:var(--faint);">Belum ada file</div>';
+        continue;
+      }
+      el.innerHTML = data.data.map(f => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border:1px solid var(--border);border-radius:7px;margin-bottom:5px;">
+          <div>
+            <div style="font-size:11.5px;font-weight:600;color:var(--ink);">${f.filename}</div>
+            <div style="font-size:10px;color:var(--faint);">${f.rows} baris · ${f.uploaded_at}</div>
+          </div>
+          <button onclick="deleteUpload('${jenis}', '${f.filename}', this)"
+            style="background:none;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;cursor:pointer;color:#dc2626;font-size:11px;">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div style="font-size:11px;color:var(--red);">Gagal memuat</div>';
+    }
+  }
+}
+
+async function deleteUpload(jenis, filename, btn) {
+  if (!confirm(`Hapus file "${filename}"?\nData akan dihapus dan cache diperbarui otomatis.`)) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-circle-notch fa-spin"></i>';
+  try {
+    const res  = await fetch(`/admin/uploads/${jenis}/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.status === 'success') {
+      loadUploadLists();
+    } else {
+      alert(data.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa fa-trash"></i>';
+    }
+  } catch(e) {
+    alert('Gagal menghapus file');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-trash"></i>';
+  }
+}
+
+</script>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div class="modal-overlay" id="modalHapus">
+  <div class="modal-card">
+    <div class="modal-icon"><i class="fa fa-trash"></i></div>
+    <div class="modal-title">Hapus File?</div>
+    <div class="modal-desc">
+      File <span class="modal-filename" id="modalFilename"></span> akan dihapus permanen dari sistem. Tindakan ini tidak bisa dibatalkan.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-confirm-delete" onclick="confirmDelete()">
+        <i class="fa fa-trash"></i> Hapus
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

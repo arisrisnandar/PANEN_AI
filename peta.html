@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peta Nowcast FSVA — PANEN-AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root {
+  --bg:        #f4f6f3;
+  --surface:   #ffffff;
+  --surface-2: #f8faf7;
+  --border:    #e3e8e1;
+  --border-2:  #d0d9ce;
+  --nav-bg:    #0d2818;
+  --green-900: #0d2818;
+  --green-800: #14532d;
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-400: #4ade80;
+  --green-300: #86efac;
+  --green-100: #dcfce7;
+  --green-50:  #f0fdf4;
+  --ink:       #111c13;
+  --ink-2:     #344a2f;
+  --muted:     #6b7f66;
+  --faint:     #a8b9a3;
+  --radius:    14px;
+  --radius-sm: 9px;
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow:    0 4px 16px rgba(0,0,0,0.08);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius:10px; }
+
+/* ── MAP CONTAINER ── */
+#map {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+/* ── JUDUL OVERLAY ── */
+.map-title {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+}
+.map-title h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.map-title p {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── LEGENDA ── */
+.map-legend {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  min-width: 180px;
+}
+.legend-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.legend-item:last-child { margin-bottom: 0; }
+.legend-color {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 2000;
+  background: rgba(244,246,243,0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.loading-overlay i { font-size: 28px; color: var(--green-600); }
+.loading-overlay p { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+/* ── POPUP LEAFLET OVERRIDE ── */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  border: 1px solid var(--border) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 240px !important;
+}
+.leaflet-popup-tip-container { display: none; }
+
+.popup-wrap { padding: 14px 16px; }
+
+.popup-kab {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.popup-prov {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.popup-kelas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.popup-skor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.popup-skor-item { text-align: center; }
+.popup-skor-val {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.popup-skor-lbl {
+  font-size: 9.5px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+.popup-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <i class="fa fa-circle-notch fa-spin"></i>
+  <p>Memuat peta nowcast FSVA...</p>
+</div>
+
+<!-- Map -->
+<div id="map"></div>
+
+<!-- Judul -->
+<div class="map-title">
+  <h2>Peta Nowcast FSVA</h2>
+  <p id="mapSubtitle">Memuat...</p>
+</div>
+
+<!-- Legenda -->
+<div class="map-legend">
+  <div class="legend-title">Kelas Ketahanan Pangan</div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#7f1d1d;"></div>
+    Sangat Rentan (1.0–1.5)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#dc2626;"></div>
+    Rentan (1.5–2.5)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#fb923c;"></div>
+    Agak Rentan (2.5–3.5)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#86efac;"></div>
+    Agak Tahan (3.5–4.5)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#16a34a;"></div>
+    Tahan (4.5–5.5)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#14532d;"></div>
+    Sangat Tahan (5.5–6.0)
+  </div>
+</div>
+
+<script>
+const API = '';
+
+// ── Warna per kelas nowcast ──
+function getColor(score) {
+  if (score <= 1.5) return '#7f1d1d';
+  if (score <= 2.5) return '#dc2626';
+  if (score <= 3.5) return '#fb923c';
+  if (score <= 4.5) return '#86efac';
+  if (score <= 5.5) return '#16a34a';
+  return '#14532d';
+}
+
+function getKelas(score) {
+  if (score <= 1.5) return { label: 'Sangat Rentan', cls: '#7f1d1d', bg: '#fee2e2', color: '#7f1d1d' };
+  if (score <= 2.5) return { label: 'Rentan',        cls: '#dc2626', bg: '#fee2e2', color: '#991b1b' };
+  if (score <= 3.5) return { label: 'Agak Rentan',   cls: '#fb923c', bg: '#ffedd5', color: '#9a3412' };
+  if (score <= 4.5) return { label: 'Agak Tahan',    cls: '#86efac', bg: '#dcfce7', color: '#166534' };
+  if (score <= 5.5) return { label: 'Tahan',         cls: '#16a34a', bg: '#dcfce7', color: '#14532d' };
+  return               { label: 'Sangat Tahan',      cls: '#14532d', bg: '#dcfce7', color: '#14532d' };
+}
+
+
+
+// ── Init Leaflet ──
+const map = L.map('map', {
+  center: [-2.5, 118],
+  zoom: 5,
+  zoomControl: false,
+  attributionControl: false,
+});
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 10,
+}).addTo(map);
+
+// ── Load semua data ──
+async function loadAll() {
+  try {
+    // Parallel fetch
+    const [fsvaRes, geoRes] = await Promise.all([
+      fetch(`${API}/api/fsva-data`),
+      fetch(`${API}/api/geojson`),
+    ]);
+
+    if (!fsvaRes.ok) throw new Error('Gagal ambil data FSVA');
+    if (!geoRes.ok)  throw new Error('Gagal ambil GeoJSON');
+
+    const fsvaJson = await fsvaRes.json();
+    const geoJson  = await geoRes.json();
+
+    // Ambil tahun terbaru
+    const tahunList = Object.keys(fsvaJson.data || {}).map(Number).sort((a,b) => b-a);
+    const tahun     = tahunList[0];
+    const records   = fsvaJson.data[tahun] || [];
+
+    // Hitung judul dari prediksi pertama
+    // Ambil tanggal prediksi pertama dari data harga (H+1 dari data terakhir)
+    // Gunakan tahun+1 sebagai estimasi
+    const predYear  = tahun + 1;
+    const subtitle  = `Januari ${predYear} · berbasis data FSVA ${tahun}`;
+    document.getElementById('mapSubtitle').textContent = subtitle;
+
+
+
+    // Helper: ambil nama kabupaten dari properties GeoJSON
+    // GeoJSON pakai property WADMKK, Title Case (e.g. "Aceh Barat", "Kota Bogor")
+    function getKabFromProps(props) {
+      return props?.WADMKK || props?.Kab_Name || props?.KAB_NAME
+          || props?.KABKOT  || props?.kabupaten || props?.name || '';
+    }
+    function getProvFromProps(props) {
+      return props?.WADMPR || props?.Prov_Name || props?.PROVINSI
+          || props?.provinsi || '';
+    }
+
+    // Alias manual untuk nama GeoJSON yang berbeda dari FSVA
+    // Format: { "nama di geojson lowercase": "nama di fsva lowercase" }
+    const ALIAS = {
+      'administrasi kepulauan seribu':       'kepulauan seribu',
+      'kota administrasi jakarta pusat':     'jakarta pusat',
+      'kota administrasi jakarta utara':     'jakarta utara',
+      'kota administrasi jakarta barat':     'jakarta barat',
+      'kota administrasi jakarta selatan':   'jakarta selatan',
+      'kota administrasi jakarta timur':     'jakarta timur',
+    };
+
+    // normName: lowercase, collapse spasi, strip prefix administrasi/kabupaten/kota
+    function normName(s) {
+      if (!s) return '';
+      let n = s.toLowerCase().replace(/\s+/g, ' ').trim();
+      n = n.replace(/^administrasi /, '');
+      n = n.replace(/^(kabupaten |kab\. |kab |kota administrasi )/, '');
+      return n;
+    }
+
+    // Buat lookup: key = lowercase nama FSVA (dari backend, sudah .title())
+    // Tambah juga key tanpa prefix "kota " supaya "Kota Bogor" GeoJSON → "bogor" match
+    const lookup = {};
+    records.forEach(r => {
+      const k1 = (r.Kabupaten || '').toLowerCase().trim();
+      if (k1) {
+        lookup[k1] = r;
+        // Tambah versi tanpa "kota " di depan
+        const k2 = k1.replace(/^kota /, '');
+        if (k2 !== k1) lookup[k2] = r;
+      }
+    });
+
+    // findRecord: coba 4 cara match
+    function findRecord(geoName) {
+      if (!geoName) return null;
+      const raw   = geoName.toLowerCase().replace(/\s+/g,' ').trim();
+      const alias = ALIAS[raw];
+      if (alias) return lookup[alias] || null;
+      return lookup[raw]
+          || lookup[normName(raw)]
+          || lookup[raw.replace(/^kota /, '')]
+          || null;
+    }
+
+    console.log('[FSVA] records:', records.length, '| lookup keys:', Object.keys(lookup).length);
+    if (geoJson.features?.length) {
+      const p = geoJson.features[0].properties;
+      const kabTest = getKabFromProps(p);
+      const hit = findRecord(kabTest);
+      console.log('[GEO] feature[0] WADMKK:', kabTest, '→', hit ? 'MATCH: '+hit.Kabupaten : 'NO MATCH');
+      const p2 = geoJson.features[10]?.properties;
+      if (p2) {
+        const k2 = getKabFromProps(p2);
+        console.log('[GEO] feature[10] WADMKK:', k2, '→', findRecord(k2) ? 'MATCH' : 'NO MATCH');
+      }
+    }
+
+    // Render GeoJSON
+    L.geoJSON(geoJson, {
+      style: feature => {
+        const kabRaw = getKabFromProps(feature.properties);
+        const data   = findRecord(kabRaw);
+        const score  = data?.nowcast_score ?? data?.fsva_score ?? null;
+        return {
+          fillColor:   score != null ? getColor(score) : '#e5e7eb',
+          fillOpacity: 0.8,
+          color:       '#fff',
+          weight:      0.4,
+          opacity:     0.8,
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        layer.on({
+          mouseover: e => {
+            e.target.setStyle({ fillOpacity: 0.95, weight: 1.5, color: '#333' });
+          },
+          mouseout: e => {
+            e.target.setStyle({ fillOpacity: 0.8, weight: 0.4, color: '#fff' });
+          },
+          click: e => {
+            const kabRaw = getKabFromProps(feature.properties);
+            const prov   = getProvFromProps(feature.properties);
+            const data   = findRecord(kabRaw);
+
+            if (!data) {
+              console.warn('[FSVA] No match:', JSON.stringify(feature.properties));
+            }
+
+            const nowcast    = data?.nowcast_score ?? data?.fsva_score ?? 3;
+            const struktural = data?.fsva_score ?? nowcast;
+            const kelas      = getKelas(nowcast);
+            // Nama kabupaten: dari data FSVA atau dari GeoJSON properties
+            const kabLabel   = data?.Kabupaten
+                            ?? feature.properties?.Kab_Name
+                            ?? feature.properties?.KABKOT
+                            ?? feature.properties?.name
+                            ?? kab.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            // Nama provinsi: dari data FSVA atau dari GeoJSON properties
+            const provLabel  = data?.Provinsi
+                            ?? feature.properties?.Prov_Name
+                            ?? feature.properties?.PROVINSI
+                            ?? prov;
+
+            // Gunakan null check eksplisit — data.delta bisa bernilai 0 (falsy),
+            // ?? operator akan salah tangkap, jadi pakai pengecekan != null.
+            const delta = (data != null && data.delta != null)
+                            ? data.delta
+                            : (nowcast - struktural);
+
+            // Breakdown faktor delta: harga, cuaca, ncpr
+            const bd = data?.delta_breakdown || {};
+            const FAKTOR_LABEL = {
+              harga: { naik: 'Harga pangan diprediksi naik tajam', turun: 'Harga pangan diprediksi turun' },
+              cuaca: { naik: 'Curah hujan ekstrem (kekeringan/banjir)', turun: 'Curah hujan normal' },
+              ncpr:  { naik: 'Rasio NCPR rendah', turun: 'Rasio NCPR tinggi' },
+            };
+            const faktorItems = Object.entries(bd)
+              .filter(([, v]) => v !== 0 && v != null)
+              .map(([key, v]) => {
+                const memburuk = v < 0;
+                const label = memburuk ? FAKTOR_LABEL[key]?.naik : FAKTOR_LABEL[key]?.turun;
+                const color = memburuk ? '#dc2626' : 'var(--green-600)';
+                const sign  = v > 0 ? '+' : '';
+                return `<div style="display:flex;justify-content:space-between;gap:8px;">
+                          <span>${label || key}</span>
+                          <span style="color:${color};font-weight:600;white-space:nowrap;">${sign}${v.toFixed(2)}</span>
+                        </div>`;
+              }).join('');
+
+            const popupHtml = `
+              <div class="popup-wrap">
+                <div class="popup-kab">${kabLabel}</div>
+                <div class="popup-prov">${provLabel}</div>
+                <div class="popup-kelas" style="background:${kelas.bg};color:${kelas.color};">
+                  ${kelas.label}
+                </div>
+                <div class="popup-skor">
+                  <div class="popup-skor-item">
+                    <div class="popup-skor-val">${nowcast.toFixed(2)}</div>
+                    <div class="popup-skor-lbl">Nowcast</div>
+                  </div>
+                  <div class="popup-divider"></div>
+                  <div class="popup-skor-item">
+                    <div class="popup-skor-val">${struktural.toFixed(2)}</div>
+                    <div class="popup-skor-lbl">Struktural</div>
+                  </div>
+                  <div class="popup-divider"></div>
+                  <div class="popup-skor-item">
+                    <div class="popup-skor-val" style="color:${delta >= 0 ? 'var(--green-600)' : '#dc2626'};">
+                      ${delta > 0 ? '+' : ''}${delta.toFixed(2)}
+                    </div>
+                    <div class="popup-skor-lbl">Delta</div>
+                  </div>
+                </div>
+                ${faktorItems ? `
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#eee);font-size:11px;color:var(--ink-2);line-height:1.6;">
+                  <div style="font-weight:700;margin-bottom:4px;">Faktor yang memengaruhi:</div>
+                  ${faktorItems}
+                </div>` : ''}
+                </div>`;
+
+            L.popup({ maxWidth: 260, className: 'panen-popup' })
+              .setLatLng(e.latlng)
+              .setContent(popupHtml)
+              .openOn(map);
+          }
+        });
+      }
+    }).addTo(map);
+
+    // Sembunyikan loading
+    document.getElementById('loadingOverlay').style.display = 'none';
+
+  } catch(e) {
+    document.getElementById('loadingOverlay').innerHTML = `
+      <i class="fa fa-circle-exclamation" style="color:#dc2626;"></i>
+      <p style="color:#991b1b;">Gagal memuat peta: ${e.message}</p>`;
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>

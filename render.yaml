@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: panen-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend:app --workers 1 --timeout 120 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
